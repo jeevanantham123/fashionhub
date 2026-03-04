@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #C9A84C;
+  --secondary: #1A1A2E;
+  --background: #FAFAF8;
+  --text: #1A1A1A;
+  --accent: #E8D5A3;
+  --heading-font: "Playfair Display";
+  --body-font: "Inter";
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: var(--body-font), sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font), serif;
+}
+
+.btn-primary {
+  @apply px-6 py-3 rounded font-medium transition-all duration-200;
+  background-color: var(--primary);
+  color: white;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  @apply px-6 py-3 rounded font-medium border transition-all duration-200;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.btn-secondary:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden;
+}
+
+.input {
+  @apply w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:border-transparent;
+  --tw-ring-color: var(--primary);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
