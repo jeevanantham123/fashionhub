@@ -50,13 +50,27 @@ npm run dev
 - **Store:** http://localhost:3000
 - **Admin:** http://localhost:3000/admin
 
-## Default Accounts
+## Default Credentials
+
+### App Accounts
 
 | Email | Password | Role |
 |-------|----------|------|
 | admin@fashion.com | admin123 | Admin |
 | staff@fashion.com | staff123 | Admin |
 | user@example.com | user123 | Customer |
+
+### Database
+
+| Field | Value |
+|-------|-------|
+| Host | localhost |
+| Port | 5432 |
+| Database | fashion_ecommerce |
+| User | _(your macOS username, e.g. `jeevanantham.d`)_ |
+| Password | _(none by default on local Postgres)_ |
+
+> Full connection string in `backend/.env` → `DATABASE_URL`
 
 ## Default Coupons
 

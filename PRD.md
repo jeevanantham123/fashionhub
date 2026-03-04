@@ -1,7 +1,7 @@
 # Product Requirements Document
 ## FashionHub — Full-Stack Fashion Ecommerce Platform
 
-**Version:** 1.0
+**Version:** 1.0 → 2.0
 **Date:** 2026-03-04
 **Stack:** Next.js 14 · Node.js + Express · PostgreSQL · Prisma · TypeScript
 
@@ -223,3 +223,137 @@ Core entities: User, Address, Category, Product, ProductVariant, Order, OrderIte
 ## 9. Local Setup
 
 See `README.md` for step-by-step setup instructions.
+
+---
+
+## 10. V2 Plan — Free Tier
+
+> All services below have a **free tier** — no paid plans needed.
+
+### 10.1 Free Tier Deployment Stack
+
+| Layer | Service | Free Tier Limits |
+|-------|---------|-----------------|
+| Frontend | Vercel | Unlimited deploys, 100GB bandwidth/mo |
+| Backend | Render | 750 hrs/mo (1 service free), spins down after inactivity |
+| Database | Neon (PostgreSQL) | 0.5GB storage, 1 project |
+| Images | Cloudinary | 25GB storage, 25GB bandwidth/mo |
+| Email | Resend | 3,000 emails/mo, 1 custom domain |
+| Payments | Stripe (test mode) | Free forever — no real charges |
+
+---
+
+### 10.2 Feature Changes
+
+#### A. Image Uploads → Cloudinary
+- Replace Multer local storage with Cloudinary SDK
+- Upload images directly from admin → get back a CDN URL
+- Store Cloudinary URL in DB instead of local path
+- Remove `backend/src/uploads/` directory dependency
+- **New env vars:** `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+
+#### B. Email Notifications (Resend)
+- Order placed → confirmation email to customer (order ID, items, total)
+- Order status changed → status update email (shipped/delivered)
+- Welcome email on registration
+- Use **Resend** SDK (`resend` npm package) with React Email templates
+- **New env var:** `RESEND_API_KEY`
+
+#### C. Stripe Checkout (Test Mode)
+- Replace mock "always succeeds" checkout with Stripe Payment Intent
+- Frontend: Stripe Elements (card input component)
+- Backend: create `PaymentIntent` → confirm on frontend → webhook updates order status
+- Test card: `4242 4242 4242 4242`
+- **New env vars:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+
+#### D. Rate Limiting
+- `express-rate-limit` on all API routes (100 req/15min per IP)
+- Stricter limit on auth routes (10 req/15min)
+
+#### E. Production CORS
+- Read `ALLOWED_ORIGINS` from env — whitelist Vercel frontend URL only
+- Remove wildcard `*` CORS from v1
+
+---
+
+### 10.3 UX Improvements
+
+| Feature | Details |
+|---------|---------|
+| Skeleton loaders | Product grid, product detail, orders list |
+| Mobile nav drawer | Hamburger menu → slide-in sidebar on mobile |
+| Toast on wishlist | "Added to wishlist" / "Removed" feedback |
+| Empty states | Illustrated empty state for cart, wishlist, orders |
+| Image zoom | Click-to-zoom on product detail gallery |
+| Infinite scroll | Optional toggle vs pagination on product catalog |
+
+---
+
+### 10.4 Admin Improvements
+
+| Feature | Details |
+|---------|---------|
+| Revenue by category chart | Bar chart breakdown in dashboard |
+| Order export | Download orders as CSV |
+| Bulk product status | Select multiple → activate/deactivate |
+| Email preview | Preview order confirmation email template from admin |
+
+---
+
+### 10.5 Schema Changes for V2
+
+New fields/models needed:
+
+```prisma
+// Order — add payment fields
+model Order {
+  stripePaymentIntentId  String?
+  paymentStatus          String   @default("PENDING") // PENDING | PAID | FAILED
+}
+
+// New model for email logs (optional)
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  type      String   // ORDER_CONFIRM | STATUS_UPDATE | WELCOME
+  sentAt    DateTime @default(now())
+  orderId   String?
+}
+```
+
+---
+
+### 10.6 V2 Environment Variables
+
+```env
+# Existing
+DATABASE_URL=
+JWT_SECRET=
+
+# New in V2
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+RESEND_API_KEY=
+EMAIL_FROM=noreply@yourdomain.com
+
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+ALLOWED_ORIGINS=https://your-frontend.vercel.app
+```
+
+---
+
+### 10.7 V2 Implementation Order
+
+1. **Cloudinary** — unblocks real image hosting, needed before deploy
+2. **Rate limiting + production CORS** — security baseline
+3. **Deploy** — Neon DB → Render backend → Vercel frontend
+4. **Stripe test mode** — checkout becomes real
+5. **Email (Resend)** — order confirmations
+6. **UX improvements** — skeletons, mobile nav, empty states
+7. **Admin improvements** — CSV export, bulk actions
