@@ -35,9 +35,11 @@ cd ecommerce-fashion/frontend && npm run dev
 - **Theme system:** `ThemeSetting` DB rows → `/api/theme` → `themeStore.ts` → CSS variables on `document.documentElement` → Tailwind picks up `var(--primary)` etc.
 - **Guest cart:** `sessionId` in localStorage → `x-session-id` header → `/api/cart/merge` on login
 - **Auth:** JWT in Zustand `authStore`, axios interceptor attaches `Authorization: Bearer` on every request
-- **Image uploads:** Multer local storage at `backend/src/uploads/` — served as static at `/uploads/`
+- **Image uploads:** Cloudinary SDK (memory storage → stream upload) → returns CDN URL stored in DB
 - **Admin guard:** `authenticate` + `requireAdmin` middleware on all `/api/admin/*` routes
-- **Next.js Suspense:** Pages using `useSearchParams` are wrapped in `<Suspense>` (Products, Search pages)
+- **Next.js Suspense:** Pages using `useSearchParams` are wrapped in `<Suspense>` (Products, Search, Login pages)
+- **Rate limiting:** 100 req/15min (all API), 10 req/15min (auth routes) via `express-rate-limit`
+- **CORS:** `ALLOWED_ORIGINS` env var — defaults to `localhost:3000` in dev, Vercel URL in prod
 
 ## File Map (Key Files)
 
@@ -63,9 +65,18 @@ cd ecommerce-fashion/frontend && npm run dev
 - **Branching:** `feat/*` for new features, `fix/*` for bugs — never commit directly to `main`
 - **Commit style:** `feat:`, `fix:`, `chore:`, `docs:` prefixes
 
+## Production URLs
+
+| Service | URL |
+|---------|-----|
+| Frontend (Vercel) | https://dreamweaver-fashionhub.vercel.app |
+| Backend (Render) | https://fashionhub-z16x.onrender.com |
+| API Health | https://fashionhub-z16x.onrender.com/api/health |
+
 ## Current Status
 
 | Version | Status | Notes |
 |---------|--------|-------|
-| v1 | Live (local) | All core features complete, pushed to GitHub |
-| v2 | In planning | Cloudinary · Stripe test · Resend email · rate limiting · deploy (Vercel + Render + Neon) |
+| v1 | Live (local) | All core features complete |
+| v2 | Deployed ✓ | Cloudinary · rate limiting · CORS · Neon DB · Render · Vercel |
+| v2 next | Pending | Stripe test checkout · Resend email · UX improvements |
